@@ -10,7 +10,11 @@ import (
 	"github.com/containers/podman/v3/libpod/define"
 	"github.com/containers/podman/v3/pkg/domain/entities"
 	"github.com/containers/podman/v3/pkg/terminal"
+	"github.com/mook/podman-wsl/config"
+	"github.com/mook/podman-wsl/wsl"
 	"github.com/sirupsen/logrus"
+
+	_ "embed"
 
 	_ "github.com/containers/podman/v3/cmd/podman/containers"
 	_ "github.com/containers/podman/v3/cmd/podman/images"
@@ -22,9 +26,28 @@ import (
 	_ "github.com/containers/podman/v3/cmd/podman/volumes"
 )
 
+//go:embed image/podman-wsl-distro.tar
+var distroArchive []byte
+
 func main() {
+	if err := ensurePodman(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error launching podman in WSL: %s\n", err)
+		os.Exit(1)
+	}
 	parseCommands()
 	execute()
+}
+
+func ensurePodman() error {
+	err := wsl.RegisterWSL(config.Config.Distro, config.Config.DistroPath, distroArchive)
+	if err != nil {
+		return err
+	}
+	err = wsl.EnsurePodman(config.Config.Distro, config.Config.Port)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func parseCommands() {
