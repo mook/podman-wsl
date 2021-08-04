@@ -8,6 +8,7 @@ import (
 
 	"github.com/containers/podman/v3/cmd/podman/registry"
 	"github.com/containers/podman/v3/cmd/podman/validate"
+	"github.com/containers/podman/v3/pkg/domain/entities"
 	"github.com/containers/podman/v3/version"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -20,6 +21,8 @@ var (
 		PersistentPreRunE:  persistentPreRunE,
 		RunE:               validate.SubCommandExists,
 		PersistentPostRunE: persistentPostRunE,
+		SilenceErrors:      true,
+		SilenceUsage:       true,
 		Version:            version.Version.String(),
 	}
 )
@@ -67,6 +70,23 @@ func persistentPreRunE(cmd *cobra.Command, args []string) error {
 	}
 	if _, err := registry.NewContainerEngine(cmd, args); err != nil {
 		return err
+	}
+
+	// Create the "podman" network if it doesn't exist; this is needed to
+	// actually run containers (in the default configuration)
+	networkExists, err := registry.ContainerEngine().NetworkExists(registry.Context(), "podman")
+	if err != nil {
+		return err
+	}
+	if networkExists == nil || !networkExists.Value {
+		_, err := registry.ContainerEngine().NetworkCreate(
+			registry.Context(),
+			"podman",
+			entities.NetworkCreateOptions{},
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, env := range cfg.Engine.Env {
