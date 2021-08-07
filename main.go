@@ -26,7 +26,7 @@ import (
 	_ "github.com/containers/podman/v3/cmd/podman/volumes"
 )
 
-//go:embed image/podman-wsl-distro.tar
+//go:embed image/podman-wsl-distro.tar.gz
 var distroArchive []byte
 
 func main() {

@@ -2,7 +2,10 @@
 package wsl
 
 import (
+	"bytes"
+	"compress/gzip"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -143,13 +146,17 @@ func registerDistro(distroName, distroPath string, archiveData []byte) error {
 		return fmt.Errorf("could not create temporary archive: %w", err)
 	}
 	defer os.Remove(archive.Name())
+	reader, err := gzip.NewReader(bytes.NewBuffer(archiveData))
+	if err != nil {
+		return fmt.Errorf("could not open distro archive: %w", err)
+	}
+	_, err = io.Copy(archive, reader)
+	if err != nil {
+		return fmt.Errorf("could not write temporary archive: %w", err)
+	}
 	err = archive.Close()
 	if err != nil {
 		return fmt.Errorf("could not close temporary archive file: %w", err)
-	}
-	err = os.WriteFile(archive.Name(), archiveData, 0o600)
-	if err != nil {
-		return fmt.Errorf("could not write temporary archive: %w", err)
 	}
 
 	expandedDistroPath := os.ExpandEnv(distroPath)

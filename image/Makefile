@@ -1,3 +1,6 @@
+podman-wsl-distro.tar.gz: podman-wsl-distro.tar
+	gzip --best --keep "$<"
+
 podman-wsl-distro.tar: podman-wsl-distro.container-id
 	podman export --output "$@" "$(shell cat "$<")"
 	podman rm --force --ignore "$(shell cat "$<")"

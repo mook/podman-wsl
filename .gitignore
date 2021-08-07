@@ -1,3 +1,4 @@
 *.exe
 /image/*.image-id
 /image/*.tar
+/image/*.tar.gz
