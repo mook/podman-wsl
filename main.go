@@ -32,10 +32,6 @@ import (
 var distroArchive []byte
 
 func main() {
-	if err := ensurePodman(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error launching podman in WSL: %s\n", err)
-		os.Exit(1)
-	}
 	parseCommands()
 	execute()
 }
@@ -50,6 +46,13 @@ func ensurePodman() error {
 		return err
 	}
 	return nil
+}
+
+func ensurePodmanHook() {
+	err := ensurePodman()
+	if err != nil {
+		logrus.Fatalf("Error launching podman in WSL: %s\n", err)
+	}
 }
 
 func parseCommands() {

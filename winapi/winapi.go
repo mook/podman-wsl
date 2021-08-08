@@ -145,16 +145,3 @@ func GetStdHandle(file *os.File) (syscall.Handle, error) {
 	}
 	return target, nil
 }
-
-func OutputDebugstring(message string) error {
-	OutputDebugStringW, err := getProc("kernel32.dll", "OutputDebugStringW")
-	if err != nil {
-		return err
-	}
-	messageBytes, err := syscall.UTF16PtrFromString(message)
-	if err != nil {
-		return err
-	}
-	_, _, _ = OutputDebugStringW.Call(uintptr(unsafe.Pointer(messageBytes)))
-	return nil
-}

@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/containers/podman/v3/cmd/podman/common"
 	"github.com/containers/podman/v3/cmd/podman/registry"
 	"github.com/containers/podman/v3/cmd/podman/validate"
 	"github.com/containers/podman/v3/pkg/domain/entities"
@@ -25,9 +26,13 @@ var (
 		SilenceUsage:       true,
 		Version:            version.Version.String(),
 	}
+
+	logLevel = "warn"
 )
 
 func init() {
+	cobra.OnInitialize(loggingHook, ensurePodmanHook)
+
 	flags := rootCmd.Flags()
 	flags.String("context", "default", "Name of the context to use to connect to the daemon (This flag is a NOOP and provided solely for scripting compatibility.)")
 	flags.MarkHidden("context")
@@ -125,4 +130,29 @@ func persistentPostRunE(cmd *cobra.Command, args []string) error {
 		containerEngine.Shutdown(registry.Context())
 	}
 	return nil
+}
+
+func loggingHook() {
+	var found bool
+	for _, l := range common.LogLevels {
+		if l == strings.ToLower(logLevel) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		fmt.Fprintf(os.Stderr, "Log Level %q is not supported, choose from: %s\n", logLevel, strings.Join(common.LogLevels, ", "))
+		os.Exit(1)
+	}
+
+	level, err := logrus.ParseLevel(logLevel)
+	if err != nil {
+		fmt.Fprint(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+	logrus.SetLevel(level)
+
+	if logrus.IsLevelEnabled(logrus.InfoLevel) {
+		logrus.Infof("%s filtering at log level %s", os.Args[0], logrus.GetLevel())
+	}
 }

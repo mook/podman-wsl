@@ -12,8 +12,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mook/podman-wsl/winapi"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/text/encoding/unicode"
+
+	"github.com/mook/podman-wsl/winapi"
 )
 
 type IsDistro string
@@ -48,7 +50,7 @@ func EnsurePodman(distro string, port int) error {
 		return nil
 	}
 
-	winapi.Debugf("Distro %s is not running; starting podman", distro)
+	logrus.Debugf("Distro %s is not running; starting podman", distro)
 	cmd, err := wslCommand("--distribution", distro, "--exec",
 		"/usr/bin/podman", "system", "service", "--time=0",
 		fmt.Sprintf("tcp:127.0.0.1:%d", port))
@@ -131,10 +133,7 @@ func isDistro(distro string, mode IsDistro) (bool, error) {
 			return true, nil
 		}
 	}
-	err = winapi.Debugf("distribution %s is not %s", distro, string(mode))
-	if err != nil {
-		return false, err
-	}
+	logrus.Debugf("distribution %s is not %s", distro, string(mode))
 	return false, nil
 }
 
@@ -160,7 +159,7 @@ func registerDistro(distroName, distroPath string, archiveData []byte) error {
 	}
 
 	expandedDistroPath := os.ExpandEnv(distroPath)
-	_ = winapi.Debugf("Registering distribution %s at %s from archive %s", distroName, expandedDistroPath, archive.Name())
+	logrus.Debugf("Registering distribution %s at %s from archive %s", distroName, expandedDistroPath, archive.Name())
 
 	err = wsl("--import", distroName, expandedDistroPath, archive.Name())
 	if err != nil {
