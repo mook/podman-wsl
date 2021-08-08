@@ -24,6 +24,8 @@ import (
 	_ "github.com/containers/podman/v3/cmd/podman/system"
 	_ "github.com/containers/podman/v3/cmd/podman/system/connection"
 	_ "github.com/containers/podman/v3/cmd/podman/volumes"
+
+	_ "github.com/mook/podman-wsl/cmd"
 )
 
 //go:embed image/podman-wsl-distro.tar.gz

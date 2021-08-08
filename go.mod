@@ -3,6 +3,8 @@ module github.com/mook/podman-wsl
 go 1.16
 
 require (
+	github.com/containers/common v0.38.16
+	github.com/containers/image/v5 v5.12.0
 	github.com/containers/podman/v3 v3.2.3
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/pelletier/go-toml/v2 v2.0.0-beta.3
